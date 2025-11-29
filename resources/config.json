@@ -1,0 +1,6 @@
+{
+  "apps": {
+    "name": "flight",
+    "httpPort": 8000
+  }
+}
