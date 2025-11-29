@@ -72,4 +72,5 @@ type FlightRequest struct {
 	PriceStart int    `json:"priceStart,omitempty" header:"price_start"`
 	PriceEnd   int    `json:"priceEnd,omitempty" header:"price_end"`
 	Stops      int    `json:"stops" header:"stops"`
+	SortBy     string `json:"sortBy,omitempty" header:"sort_by" default:"price asc"`
 }

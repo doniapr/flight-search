@@ -3,6 +3,7 @@ package flight
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -96,6 +97,7 @@ func (s *service) Search(ctx *context.Context, req dto.FlightRequest) (resp dto.
 		failedQuery++
 	}
 
+	flights = sortResult(flights, req.SortBy)
 	te := time.Now()
 	resp = dto.BaseResponse{
 		SearchCriteria: struct {
@@ -177,4 +179,39 @@ func (s *service) queryToLion(wg *sync.WaitGroup, ctx *context.Context, req dto.
 	}
 	c <- res
 	wg.Done()
+}
+
+func sortResult(flights []dto.FlightResponse, sortArg string) []dto.FlightResponse {
+	sort.Slice(flights, func(i, j int) bool {
+		srt := flights[i].Price.Amount < flights[j].Price.Amount
+
+		srtArr := strings.Split(strings.ToLower(sortArg), " ")
+		if strings.ToLower(srtArr[0]) == "duration" {
+			if srtArr[1] == "asc" {
+				srt = flights[i].Duration.TotalMinutes < flights[j].Duration.TotalMinutes
+			} else {
+				srt = flights[i].Duration.TotalMinutes > flights[j].Duration.TotalMinutes
+			}
+		}
+
+		if strings.ToLower(srtArr[0]) == "departure" {
+			if srtArr[1] == "asc" {
+				srt = flights[i].Departure.Datetime.Before(flights[j].Departure.Datetime)
+			} else {
+				srt = flights[i].Departure.Datetime.After(flights[j].Departure.Datetime)
+			}
+		}
+
+		if strings.ToLower(srtArr[0]) == "arrival" {
+			if srtArr[1] == "asc" {
+				srt = flights[i].Arrival.Datetime.Before(flights[j].Arrival.Datetime)
+			} else {
+				srt = flights[i].Arrival.Datetime.After(flights[j].Arrival.Datetime)
+			}
+		}
+
+		return srt
+	})
+
+	return flights
 }
