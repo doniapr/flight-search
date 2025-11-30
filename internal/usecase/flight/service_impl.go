@@ -99,40 +99,9 @@ func (s *service) Search(ctx *context.Context, req dto.FlightRequest) (resp dto.
 
 	flights = sortResult(flights, req.SortBy)
 	te := time.Now()
-	resp = dto.BaseResponse{
-		SearchCriteria: struct {
-			Origin        string `json:"origin"`
-			Destination   string `json:"destination"`
-			DepartureDate string `json:"departure_date"`
-			Passengers    int    `json:"passengers"`
-			CabinClass    string `json:"cabin_class"`
-		}{
-			Origin:        req.Origin,
-			Destination:   req.Destination,
-			DepartureDate: req.DepartureDate,
-			Passengers:    req.Passengers,
-			CabinClass:    req.CabinClass,
-		},
-		Metadata: struct {
-			TotalResults       int  `json:"total_results"`
-			ProvidersQueried   int  `json:"providers_queried"`
-			ProvidersSucceeded int  `json:"providers_succeeded"`
-			ProvidersFailed    int  `json:"providers_failed"`
-			SearchTimeMs       int  `json:"search_time_ms"`
-			CacheHit           bool `json:"cache_hit"`
-		}{
-			TotalResults:       len(flights),
-			ProvidersQueried:   successQuery + failedQuery,
-			ProvidersSucceeded: successQuery,
-			ProvidersFailed:    failedQuery,
-			SearchTimeMs:       int(te.Sub(ts).Milliseconds()),
-			CacheHit:           false,
-		},
-		Flights: flights,
-	}
+	resp = assembleFlightResp(flights, req, successQuery, failedQuery, int(te.Sub(ts).Milliseconds()))
 
 	return
-
 }
 
 func (s *service) queryToAirAsia(wg *sync.WaitGroup, ctx *context.Context, req dto.FlightRequest, c chan<- []dto.FlightResponse, errChan chan<- error) {

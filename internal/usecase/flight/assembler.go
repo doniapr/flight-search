@@ -69,3 +69,37 @@ func assembleLionReq(in dto.FlightRequest) dto.LionRequest {
 		Stops:      in.Stops,
 	}
 }
+
+func assembleFlightResp(in []dto.FlightResponse, req dto.FlightRequest, successQuery, failedQuery, ts int) dto.BaseResponse {
+	return dto.BaseResponse{
+		SearchCriteria: struct {
+			Origin        string `json:"origin"`
+			Destination   string `json:"destination"`
+			DepartureDate string `json:"departure_date"`
+			Passengers    int    `json:"passengers"`
+			CabinClass    string `json:"cabin_class"`
+		}{
+			Origin:        req.Origin,
+			Destination:   req.Destination,
+			DepartureDate: req.DepartureDate,
+			Passengers:    req.Passengers,
+			CabinClass:    req.CabinClass,
+		},
+		Metadata: struct {
+			TotalResults       int  `json:"total_results"`
+			ProvidersQueried   int  `json:"providers_queried"`
+			ProvidersSucceeded int  `json:"providers_succeeded"`
+			ProvidersFailed    int  `json:"providers_failed"`
+			SearchTimeMs       int  `json:"search_time_ms"`
+			CacheHit           bool `json:"cache_hit"`
+		}{
+			TotalResults:       len(in),
+			ProvidersQueried:   successQuery + failedQuery,
+			ProvidersSucceeded: successQuery,
+			ProvidersFailed:    failedQuery,
+			SearchTimeMs:       int(ts),
+			CacheHit:           false,
+		},
+		Flights: in,
+	}
+}
